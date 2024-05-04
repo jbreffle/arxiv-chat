@@ -5,11 +5,12 @@ import streamlit as st
 import google.generativeai as genai
 import base64
 import pyprojroot
+import sys
 
-from src import utils
 from streamlit_pdf_viewer import pdf_viewer
-import PyPDF2
 
+sys.path.insert(0, str(pyprojroot.here()))  # Add parent directory to path
+from src import utils  # pylint: disable=wrong-import-position
 
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
