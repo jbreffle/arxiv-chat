@@ -7,6 +7,9 @@ import arxiv
 
 PDF_DIR = pyprojroot.here("data")
 
+# Make sure the data directory exists
+os.makedirs(PDF_DIR, exist_ok=True)
+
 local_papers = {
     "paper_1": {
         "title": "Attention is All You Need",
