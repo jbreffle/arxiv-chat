@@ -1,1 +1,8 @@
 streamlit
+ipykernel
+ipywidgets
+google-generativeai # The Python SDK for the Gemini API
+python-dotenv # from dotenv import load_dotenv; load_dotenv()
+arxiv
+pyprojroot
+streamlit-pdf-viewer
