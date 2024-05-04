@@ -19,7 +19,7 @@ selected_model = "gemini-pro"
 PDF_DIR = "data"
 example_pdf = "krizhevsky_et_al_2012.pdf"
 
-USE_ST_PDF_VIEWER = False
+USE_ST_PDF_VIEWER = True
 
 
 def get_response(messages, model=selected_model):
