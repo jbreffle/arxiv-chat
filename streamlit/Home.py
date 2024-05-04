@@ -40,8 +40,6 @@ def get_pdf_dict():
 
 def app_setup(silent=False):
     """Set up the app"""
-    if not silent:
-        print("Setting up app")
     # Download PDFs if needed
     if (
         "pdfs_downloaded" not in st.session_state
@@ -84,10 +82,11 @@ def display_pdf(file):
 
 def main():
 
-    app_setup()
-
     st.title("arXiv Chat")
     st.write("Chat with arXiv papers!")
+
+    with st.spinner("Downloading papers..."):
+        app_setup()
 
     selected_pdf = example_pdf
     pdf_dict = get_pdf_dict()
