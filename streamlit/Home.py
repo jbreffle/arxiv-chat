@@ -1,64 +1,24 @@
-"""Home page for streamlit app.
-
-Notes:
-Chat input widget:
-prompt = st.text_input("Ask a question about the paper")
-
-Chat message container:
-with st.chat_mesage("user"):
-    st.markdown(prompt)
-
-Status container:
-with st.status("Generating response..."):
-    response = get_response(prompt)
-
-Write stream of text:
-st.write_stream(my_generator)
-"""
+# pylint: disable=invalid-name
+"""Home page for streamlit app"""
 
 import streamlit as st
 import google.generativeai as genai
 import base64
-from streamlit_pdf_viewer import pdf_viewer
 import pyprojroot
 
+from src import utils
+from streamlit_pdf_viewer import pdf_viewer
+import PyPDF2
 
-GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-genai.configure(api_key=GEMINI_API_KEY)
+
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
+genai.configure(api_key=GOOGLE_API_KEY)
 
 selected_model = "gemini-pro"
 PDF_DIR = "data"
+example_pdf = "krizhevsky_et_al_2012.pdf"
 
-example_pdf = "vaswani_et_al_2017.pdf"
-
-
-def show_pdf(file_path, method="Embed"):
-    """Not working. Replaced with streamlit-pdf-viewer package."""
-    if file_path is None:
-        st.stop()
-    with open(file_path, "rb") as loaded_file:
-        base64_pdf = base64.b64encode(loaded_file.read()).decode("utf-8")
-    if method == "Embed":
-        pdf_display = (
-            f'<embed src="data:application/pdf;base64,{base64_pdf}" '
-            'width="700" height="1000" type="application/pdf"></embed>'
-        )
-    elif method == "Iframe":
-        pdf_display = (
-            f'<iframe src="data:application/pdf;base64,{base64_pdf}" '
-            'width="700" height="1000" type="application/pdf"></iframe>'
-        )
-    elif method == "html":
-        # Embedding PDF in HTML
-        pdf_display = f"""<embed
-        class="pdfobject"
-        type="application/pdf"
-        title="Embedded PDF"
-        src="data:application/pdf;base64,{base64_pdf}"
-        style="overflow: auto; width: 100%; height: 100%;">"""
-    else:
-        st.Error(f"Unknown method: {method}")
-    st.markdown(pdf_display, unsafe_allow_html=True)
+USE_ST_PDF_VIEWER = False
 
 
 def get_response(messages, model="gemini-pro"):
@@ -69,44 +29,80 @@ def get_response(messages, model="gemini-pro"):
     return res
 
 
-def list_pdfs():
-    # TODO move to src
-    pdf_dict = {
-        "Attention is All You Need": "vaswani_et_al_2017.pdf",
-        "BERT": "devlin_et_al_2018.pdf",
-        "Generative Adversarial Nets": "goodfellow_et_al_2014.pdf",
-        "Playing Atari with Deep Reinforcement Learning": "mnih_et_al_2013.pdf",
-        "ImageNet Classification with Deep Convolutional Neural Networks": "krizhevsky_et_al_2012.pdf",
-    }
+def get_pdf_dict():
+    # Create a dictionary from "title" and "filename" in utils.local_papers
+    pdf_dict = {}
+    for _, value in utils.local_papers.items():
+        pdf_dict[value["title"]] = value["filename"]
     return pdf_dict
 
 
-def get_pdfs():
-    # See arxiv_pdfs.ipynb. Need to move function into src
-    # TODO use src function to verify pdfs are downloaded
+def app_setup(silent=True):
+    """Set up the app"""
+    if not silent:
+        print("Setting up app")
+    # Download PDFs if needed
+    if (
+        "pdfs_downloaded" not in st.session_state
+        or not st.session_state["pdfs_downloaded"]
+    ):
+        utils.get_local_papers(silent=silent)
+        st.session_state["pdfs_downloaded"] = True
+    return
+
+
+def display_pdf(file):
+    pdf_viewer_width = 700
+    pdf_viewer_height = 800
+    method = "html"
+    with open(file, "rb") as f:
+        base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+    if method == "iframe":
+        # Note: iframe doesn't adjust width to the container
+        pdf_display = f"""<iframe
+                        src="data:application/pdf;base64,{base64_pdf}"
+                        width="{pdf_viewer_width}"
+                        height="{pdf_viewer_height}"
+                        type="application/pdf">
+                        </iframe>"""
+    elif method == "html":
+        pdf_display = f"""<embed
+                        class="pdfobject"
+                        type="application/pdf"
+                        title="Embedded PDF"
+                        src="data:application/pdf;base64,{base64_pdf}"
+                        width="100%"
+                        height="{pdf_viewer_height}"
+                        >"""
+        #               style="overflow: auto; width: 100%; height: 100%;"
+    else:
+        st.Error(f"Unknown method: {method}")
+    st.markdown(pdf_display, unsafe_allow_html=True)
     return
 
 
 def main():
 
-    # get_pdfs()
-    # show_pdf(pyprojroot.here() / "data" / example_pdf, method="html")
+    app_setup()
 
     st.title("arXiv Chat")
-    st.write("Chat with recent arXiv papers!")
+    st.write("Chat with arXiv papers!")
 
     selected_pdf = example_pdf
-    pdf_dict = list_pdfs()
-    selected_pdf_key = st.selectbox("Select a PDF", list(pdf_dict.keys()))
+    pdf_dict = get_pdf_dict()
+    selected_pdf_key = st.selectbox("Select a PDF", list(pdf_dict.keys()), index=4)
     selected_pdf = pdf_dict[selected_pdf_key]
 
-    with st.expander("Show PDF", expanded=True):
-        pdf_viewer(
-            pyprojroot.here() / "data" / selected_pdf,
-            height=600,
-            width=800,
-            rendering="unwrap",  # "unwrap", "legacy_iframe", "legacy_embed"
-        )
+    with st.expander("The paper", expanded=True):
+        if USE_ST_PDF_VIEWER:
+            pdf_viewer(
+                pyprojroot.here() / "data" / selected_pdf,
+                height=600,
+                width=700,
+                rendering="unwrap",  # "unwrap", "legacy_iframe", "legacy_embed"
+            )
+        else:
+            display_pdf(pyprojroot.here() / "data" / selected_pdf)
 
     if "messages" not in st.session_state:
         st.session_state["messages"] = []
