@@ -2,3 +2,4 @@ streamlit
 google-generativeai # The Python SDK for the Gemini API
 streamlit-pdf-viewer
 pyprojroot
+arxiv
