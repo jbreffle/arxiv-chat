@@ -46,7 +46,7 @@ def get_local_papers(papers=None, silent=False):
         # Check if the paper has been downloaded
         if not os.path.exists(os.path.join(PDF_DIR, paper["filename"])):
             if not silent:
-                print(f"Downloading: {paper['title']}")
+                print(f"Downloading: {paper['title']} to {PDF_DIR}")
             if paper["arxiv_id"] == "":
                 urllib.request.urlretrieve(
                     paper["alt_url"], os.path.join(PDF_DIR, paper["filename"])

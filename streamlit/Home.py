@@ -38,7 +38,7 @@ def get_pdf_dict():
     return pdf_dict
 
 
-def app_setup(silent=True):
+def app_setup(silent=False):
     """Set up the app"""
     if not silent:
         print("Setting up app")
