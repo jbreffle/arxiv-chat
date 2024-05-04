@@ -22,7 +22,7 @@ example_pdf = "krizhevsky_et_al_2012.pdf"
 USE_ST_PDF_VIEWER = False
 
 
-def get_response(messages, model="gemini-pro"):
+def get_response(messages, model=selected_model):
     model = genai.GenerativeModel(model)
     res = model.generate_content(
         messages, stream=True, safety_settings={"HARASSMENT": "block_none"}

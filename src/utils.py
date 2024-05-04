@@ -1,8 +1,5 @@
 """Utility functions for the project."""
 
-import textwrap
-from IPython.display import Markdown
-
 import pyprojroot
 import os
 import urllib.request
@@ -62,8 +59,3 @@ def get_local_papers(papers=None, silent=False):
             if not silent:
                 print(f"Already downloaded: {paper['title']}")
     return
-
-
-def to_markdown(text):
-    text = text.replace("•", "  *")
-    return Markdown(textwrap.indent(text, "> ", predicate=lambda _: True))
