@@ -14,10 +14,11 @@ Primary:
 - [x] Create a Streamlit app
 - [x] Integrate with Gemini API
 - [x] Add local PDFs of important papers
-- [ ] Enable chat with local papers (use LlammaIndex for RAG?)
+- [x] Enable chat with local papers (simple text context)
 - [ ] Add option to get selected papers from arXiv
 - [ ] In second page, show LLM summary/evaluations of this day's/week's papers
   - Get most recent papers, summarize them, evalute them, rank them by importance
+- [ ] Use RAG with a database for better summaries/chat responses
 
 Secondary:
 

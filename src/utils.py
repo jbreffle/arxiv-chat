@@ -4,6 +4,7 @@ import pyprojroot
 import os
 import urllib.request
 import arxiv
+from pypdf import PdfReader
 
 PDF_DIR = pyprojroot.here("data")
 
@@ -62,3 +63,13 @@ def get_local_papers(papers=None, silent=False):
             if not silent:
                 print(f"Already downloaded: {paper['title']}")
     return
+
+
+def extract_text_from_pdf(pdf_path, max_n_pages=None):
+    reader = PdfReader(pdf_path)
+    text = ""
+    for i, page in enumerate(reader.pages):
+        if max_n_pages is not None and i > max_n_pages:
+            break
+        text += page.extract_text()
+    return text

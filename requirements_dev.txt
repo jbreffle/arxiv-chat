@@ -11,3 +11,4 @@ llama-index-llms-gemini
 llama-index-vector-stores-faiss
 faiss-cpu
 PyPDF2
+vertexai
