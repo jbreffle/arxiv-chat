@@ -147,7 +147,6 @@ def get_pre_message_prompt(pdf_text, pdf_summary):
     pre_message_text = f"""Instructions:
     You are helping an AI researcher who is learning about a paper.
     Below is the text of a paper and a summary of the paper.
-    Confirmed?
 
     Here is the text of the paper:
     ---
@@ -158,6 +157,10 @@ def get_pre_message_prompt(pdf_text, pdf_summary):
     ---
     {pdf_summary}
     ---
+
+    There may be a history of discussing others papers,
+    but your job is to answer questions about this paper.
+    Confirmed?
     """
     pre_message_prompt = []
     pre_message_prompt.append({"role": "user", "parts": [pre_message_text]})
@@ -217,7 +220,14 @@ def main():
             st.session_state.pdf_summary[selected_pdf] = pdf_summary
     pdf_text = st.session_state.pdf_text[selected_pdf]
     pdf_summary = st.session_state.pdf_summary[selected_pdf]
-    st.write(pdf_summary)
+    st.markdown(
+        f"""
+        ### Gemini's brief summary of the paper
+        {pdf_summary}
+        """
+    )
+
+    st.markdown("### Chat with Gemini about the paper")
 
     pre_message_prompt = get_pre_message_prompt(pdf_text, pdf_summary)
 
@@ -225,7 +235,9 @@ def main():
         st.session_state["messages"] = pre_message_prompt
     messages = st.session_state["messages"]
 
-    chat_message = st.chat_input("Ask a question about the paper")
+    chat_message = st.chat_input(
+        """Ask Gemini Pro a question (Like "What do you think of the paper?")"""
+    )
 
     # is_pirate = st.toggle("Chat with a pirate", False)
     # messages = make_pirate(messages, is_pirate=is_pirate)
