@@ -2,6 +2,18 @@
 
 Chat with arXiv papers.
 
+## Setup (uv)
+
+```bash
+uv sync --group dev
+```
+
+Run the Streamlit app:
+
+```bash
+uv run streamlit run streamlit/Home.py
+```
+
 ## References
 
 - [Gemini API docs](https://ai.google.dev/gemini-api/docs/get-started/python)

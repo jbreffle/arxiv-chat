@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arxiv-chat"
+version = "0.1.0"
+description = "Chat with arXiv papers."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "arxiv",
+    "google-generativeai",
+    "pypdf",
+    "pyprojroot",
+    "streamlit",
+    "streamlit-pdf-viewer",
+]
+
+[dependency-groups]
+dev = [
+    "faiss-cpu",
+    "ipykernel",
+    "ipywidgets",
+    "llama-index",
+    "llama-index-llms-gemini",
+    "llama-index-vector-stores-faiss",
+    "pypdf2",
+    "python-dotenv",
+    "vertexai",
+]
+
+[tool.uv]
+package = true
+
+[tool.setuptools]
+packages = ["src"]
