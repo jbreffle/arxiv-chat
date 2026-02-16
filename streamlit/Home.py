@@ -2,7 +2,7 @@
 """Home page for streamlit app"""
 
 import streamlit as st
-import google.generativeai as genai
+from google import genai
 import base64
 import pyprojroot
 import sys
@@ -13,10 +13,47 @@ sys.path.insert(0, str(pyprojroot.here()))  # Add parent directory to path
 from src import utils  # pylint: disable=wrong-import-position
 
 GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
-genai.configure(api_key=GOOGLE_API_KEY)
+GENAI_CLIENT = genai.Client(api_key=GOOGLE_API_KEY)
 
-DEFAULT_MODEL = "gemini-pro"
-DEFAULT_SAFETY_SETTINGS = {"HARASSMENT": "block_none"}
+DEFAULT_MODEL = "gemma-3-27b-it"
+DEFAULT_SAFETY_SETTINGS = [
+    {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"}
+]
+
+
+def _normalize_genai_contents(contents):
+    """Normalize legacy message format into google-genai content payloads."""
+    if not isinstance(contents, list):
+        return contents
+
+    normalized_contents = []
+    for content in contents:
+        if isinstance(content, dict) and "role" in content and "parts" in content:
+            role = str(content["role"]).lower()
+            if role == "assistant":
+                role = "model"
+            parts = []
+            for part in content["parts"]:
+                if isinstance(part, str):
+                    parts.append({"text": part})
+                else:
+                    parts.append(part)
+            normalized_contents.append({"role": role, "parts": parts})
+            continue
+        normalized_contents.append(content)
+    return normalized_contents
+
+
+def generate_content_text(contents, model=DEFAULT_MODEL, safety_settings=None):
+    """Call Gemini with text/content payloads and return response text."""
+    if safety_settings is None:
+        safety_settings = DEFAULT_SAFETY_SETTINGS
+    response = GENAI_CLIENT.models.generate_content(
+        model=model,
+        contents=_normalize_genai_contents(contents),
+        config={"safety_settings": safety_settings},
+    )
+    return response.text or ""
 
 
 def get_summary(pdf_text, model=DEFAULT_MODEL, safety_settings=None):
@@ -53,9 +90,11 @@ def get_summary(pdf_text, model=DEFAULT_MODEL, safety_settings=None):
         {pdf_text}
         ---
         """
-    model = genai.GenerativeModel(model)
-    response = model.generate_content(prompt, safety_settings=safety_settings)
-    return response.text
+    return generate_content_text(
+        prompt,
+        model=model,
+        safety_settings=safety_settings,
+    )
 
 
 def streaming_to_text(response):
@@ -66,11 +105,11 @@ def streaming_to_text(response):
 
 
 def get_response(messages, model=DEFAULT_MODEL, safety_settings=None):
-    if safety_settings is None:
-        safety_settings = DEFAULT_SAFETY_SETTINGS
-    model = genai.GenerativeModel(model)
-    response = model.generate_content(messages, safety_settings=safety_settings)
-    return response.text
+    return generate_content_text(
+        messages,
+        model=model,
+        safety_settings=safety_settings,
+    )
 
 
 def get_pdf_dict():
@@ -164,7 +203,7 @@ def get_pre_message_prompt(pdf_text, pdf_summary):
     """
     pre_message_prompt = []
     pre_message_prompt.append({"role": "user", "parts": [pre_message_text]})
-    pre_message_prompt.append({"role": "Model", "parts": ["Confirmed!"]})
+    pre_message_prompt.append({"role": "model", "parts": ["Confirmed!"]})
     return pre_message_prompt
 
 
@@ -221,7 +260,7 @@ def main():
     pdf_summary = st.session_state.pdf_summary[selected_pdf]
     st.markdown(
         f"""
-        ### Gemini's brief summary of the paper
+        ### Brief summary from {DEFAULT_MODEL}
         {pdf_summary}
         """
     )
@@ -235,7 +274,7 @@ def main():
     messages = st.session_state["messages"]
 
     chat_message = st.chat_input(
-        """Ask Gemini Pro a question (Like "What do you think of the paper?")"""
+        f"""Ask `{DEFAULT_MODEL}` a question (Like "What do you think of the paper?")"""
     )
 
     # is_pirate = st.toggle("Chat with a pirate", False)

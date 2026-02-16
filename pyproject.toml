@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "arxiv",
-    "google-generativeai",
+    "google-genai",
     "pypdf",
     "pyprojroot",
     "streamlit",

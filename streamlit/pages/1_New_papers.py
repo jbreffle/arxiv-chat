@@ -4,7 +4,6 @@
 import streamlit as st
 import pyprojroot
 import sys
-import google.generativeai as genai
 
 from datetime import date
 
@@ -77,9 +76,11 @@ def get_summary_response(
         {new_paper_summaries}
         ---
         """
-    model = genai.GenerativeModel(model)
-    response = model.generate_content(prompt, safety_settings=safety_settings)
-    return response.text
+    return Home.generate_content_text(
+        prompt,
+        model=model,
+        safety_settings=safety_settings,
+    )
 
 
 def main():
@@ -131,7 +132,7 @@ def main():
     st.divider()
 
     # Summary:
-    st.markdown("### Gemini's summary")
+    st.markdown(f"### Summary from {Home.DEFAULT_MODEL}")
     # TODO switch from spinner to streaming response
     with st.spinner("Summarizing papers..."):
         model_summary = get_summary_response(new_paper_summaries)
