@@ -207,7 +207,6 @@ def main():
                 pdf_path,
                 height=600,
                 width=700,
-                rendering="unwrap",  # "unwrap", "legacy_iframe", "legacy_embed"
             )
 
     # Generate summary for selected pdf, selected_pdf is not a key in st.session_state.pdf_summary
